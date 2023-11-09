@@ -49,7 +49,7 @@ app.get('/info',(req, res)=>{
         <p>Phonebook has info for ${persons.length} people.</p>
         <p>${requestTime}</p>
     `);
-});
+})
 
 
 
