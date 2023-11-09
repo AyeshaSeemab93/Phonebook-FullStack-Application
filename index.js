@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 
-const phoneBook = [
+const persons = [
   { 
     "id": 1,
     "name": "Arto Hellas", 
@@ -23,23 +23,33 @@ const phoneBook = [
     "number": "39-23-6423122"
   }
 ]
+
 app.get('/', (req, res)=>{
   res.send('<h1>Welcome to home page</h1>')
 })
 
-app.get('/api/phonebook/', (req,res)=>{
+app.get('/api/persons/', (req,res)=>{
   console.log('request to show all phonebook');
-  res.json(phoneBook);
+  res.json(persons);
 })
-app.get('/api/phonebook/:id', (req,res)=>{
+app.get('/api/persons/:id', (req,res)=>{
 const id = Number(req.params.id)
-const note = phoneBook.find(contact => contact.id === id);
+const note = persons.find(contact => contact.id === id);
 if(!note){
-  res.status(404).end();
+   return res.status(404).end();
 }
 
 return res.json(note)
 })
+
+app.get('/info',(req, res)=>{
+  console.log('here in info')
+  const requestTime = new Date().toString();
+    res.send(`
+        <p>Phonebook has info for ${persons.length} people.</p>
+        <p>${requestTime}</p>
+    `);
+});
 
 
 
