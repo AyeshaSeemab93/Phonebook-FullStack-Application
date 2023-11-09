@@ -31,9 +31,20 @@ app.get('/api/phonebook/', (req,res)=>{
   console.log('request to show all phonebook');
   res.json(phoneBook);
 })
+app.get('/api/phonebook/:id', (req,res)=>{
+const id = Number(req.params.id)
+const note = phoneBook.find(contact => contact.id === id);
+if(!note){
+  res.status(404).end();
+}
+
+return res.json(note)
+})
+
+
 
 
 //start server
-const port = 3000;
+const port = 3001;
 app.listen(port);
 console.log('server is running on ', port);
