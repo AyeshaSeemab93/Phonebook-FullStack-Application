@@ -1,6 +1,15 @@
 const express = require('express');
 const app = express();
+const morgan = require('morgan')
+
 app.use(express.json());
+
+app.use(morgan("tiny"));
+//app.use(morgan("combined"));
+
+//app.use(morgan(':date[iso] :method :url :http-version :user-agent :status (:response-time ms)'));
+
+
 
 let persons = [
   { 
@@ -24,6 +33,19 @@ let persons = [
     "number": "39-23-6423122"
   }
 ]
+
+//middleware function
+// const requestLogger = (request, response, next)=>{
+//   console.log('Method', request.method),
+//   console.log('Path', request.path),
+//   console.log('Body', request.body),
+//   console.log('-------'),
+//   next()
+// }
+// app.use(requestLogger);
+
+
+
 
 app.get('/', (req, res)=>{
   res.send('<h1>Welcome to home page</h1>')
@@ -83,14 +105,11 @@ const person = {
   id: generateId(),
   name: body.name,
   number: body.number
-}
-  
+} 
   persons.concat(person)
   res.json(person)
-
 }
 })
-
 
 
 //start server
