@@ -1,9 +1,12 @@
 const express = require('express');
 const app = express();
 const morgan = require('morgan')
-
+const cors = require('cors')
 app.use(express.json());
-
+//to connect differnet ports of front and backend
+app.use(cors());
+//to show static content in frontend files(index.html)
+app.use(express.static('dist'));
 //app.use(morgan("combined"));
 
 //app.use(morgan(':date[iso] :method :url :http-version :user-agent :status (:response-time ms)'));
@@ -43,19 +46,6 @@ let persons = [
     "number": "39-23-6423122"
   }
 ]
-
-//middleware function
-// const requestLogger = (request, response, next)=>{
-//   console.log('Method', request.method),
-//   console.log('Path', request.path),
-//   console.log('Body', request.body),
-//   console.log('-------'),
-//   next()
-// }
-// app.use(requestLogger);
-
-
-
 
 app.get('/', (req, res)=>{
   res.send('<h1>Welcome to home page</h1>')
