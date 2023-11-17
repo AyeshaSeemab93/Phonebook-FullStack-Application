@@ -1,3 +1,6 @@
+
+// code for storing single note
+//code for storing multiple notes ...mongo2.js
 const mongoose = require('mongoose')
 
 if (process.argv.length<3) {
