@@ -22,20 +22,20 @@ const notesSchema = new mongoose.Schema({
 });
 
 const Note = mongoose.model('Note', notesSchema);
-
+//multiple data to store
 const notesArray = [
-  { content: 'HTML is easy', important: false },
+  { content: 'HTML is easy', important: true },
   { content: 'Its a fullstrack course', important: false },
-  { content: 'Helsinki Business College', important: false },
+  { content: 'Helsinki Business College', important: true },
   { content: 'Koodauskoulutus', important: false },
 ];
 
- //create and save each note
+ //create and save each note 1 by 1
 function addNote(content, important) {
   const note = new Note({
     content,
     important,
-  });
+    });
 
   return note.save().then(result => {
     console.log('Note saved:', result);
