@@ -1,12 +1,13 @@
+require('dotenv').config();
 const mongoose = require("mongoose");
 
 if(process.argv.length <3 || process.argv.length > 5){
   console.log("write 'node fileName name number' in the command line");
   process.exit();
 }
-
+const storedPassword = process.env.PASSWORD;
 const password = process.argv[2];
-if(password !== "Seemabayesha4622"){
+if(password !== storedPassword){
 console.log("Wrong password");
 process.exit();
 }
@@ -67,5 +68,4 @@ else
       } )
 
   }
-//in terminal write node mongo_phonebook.js password Heljä 12345-543
-// node mongo_phonebook.js Seemabayesha46222 Anna 040-1234556
+//in terminal write:   node mongo.js password Heljä 12345-543
