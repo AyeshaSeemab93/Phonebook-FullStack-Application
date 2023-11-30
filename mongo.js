@@ -63,7 +63,7 @@ else
       })
       .catch(error=>{
         console.log("Could not save phoneNumber");
-        console.log(error);
+        console.log(error.message);
         mongoose.connection.close();
       } )
 

@@ -1,15 +1,22 @@
+//putting data into links/in place of http
 const express = require('express');
 const app = express();
 const morgan = require('morgan')
 const cors = require('cors')
+
+const mongoose = require('mongoose')//communication with mongoDB database
+require('dotenv').config(); //use .env variable
+//data rec in put/post req is in json.this part convert json string to JS object
 app.use(express.json());
-//to connect differnet ports of front and backend
-app.use(cors());
+app.use(cors()); //to connect differnet ports of front and backend
 //to show static content in frontend files(index.html)
 app.use(express.static('dist'));
-//app.use(morgan("combined"));
+const Phonebook =require('./model/phonoebook');
 
-//app.use(morgan(':date[iso] :method :url :http-version :user-agent :status (:response-time ms)'));
+//middlewares
+const unknownEndpoint = (req, res)=>{
+  res.status(400).send({error: 'unknown endpoint'})
+}
 
 app.use(morgan((tokens, req, res)=> {
   //conver the body boject to string first
@@ -25,51 +32,68 @@ app.use(morgan((tokens, req, res)=> {
 }));
 
 let persons = [
-  { 
-    "id": 1,
-    "name": "Arto Hellas", 
-    "number": "040-123456"
-  },
-  { 
-    "id": 2,
-    "name": "Ada Lovelace", 
-    "number": "39-44-5323523"
-  },
-  { 
-    "id": 3,
-    "name": "Dan Abramov", 
-    "number": "12-43-234345"
-  },
-  { 
-    "id": 4,
-    "name": "Mary Poppendieck", 
-    "number": "39-23-6423122"
-  }
+  // { 
+  //   "id": 1,
+  //   "name": "Arto Hellas", 
+  //   "number": "040-123456"
+  // }
 ]
 
-app.get('/', (req, res)=>{
-  res.send('<h1>Welcome to home page</h1>')
-})
+// function AddNumbers(name, number){
+//   const entry = new Phonebook({
+//     name,
+//     number
+//   })
+//   entry.save()
+//     .then(result=>{
+//       console.log(`${result.name} with number ${result.number} has been saved in database`)
+//       res.json(result)
+//     })
+//     .catch(error=>{
+//       console.log("Could not save phoneNumber");
+//       console.log(error.message);
+//     } )
+// }
+// const promiseArray = persons.map(person => AddNumbers(person.name, person.number))
+// Promise.all(promiseArray)
+// .then(()=>{
+//   console.log("All numbers saved");
+// })
+
+
 
 app.get('/api/persons/', (req,res)=>{
   console.log('request to show all phonebook');
-  res.json(persons);
+  Phonebook.find({})
+  .then(entries=>{
+    res.json(entries);
+  })
+  .catch(error=>{
+    console.log("Could not fetch data from database")
+    res.status(500).send({eror: 'internal server error'});
+
+  })
 })
+
 app.get('/api/persons/:id', (req,res)=>{
-const id = Number(req.params.id)
-const note = persons.find(contact => contact.id === id);
-if(!note){
-   return res.status(404).end();
-}
+const id = Number(req.params.id);
+Phonebook.findById(id)
+  .then(person=>{
+    console.log('person found', person)
+    res.json(person)
+  })
+  .catch(error=>{
+  console.log("Could not find the person",error.message)
+  })
 
-return res.json(note)
 })
 
-app.get('/info',(req, res)=>{
-  console.log('here in info')
+app.get('/info',async (req, res)=>{
+  console.log('In Info Page')
   const requestTime = new Date().toString();
+  const NumOfEntries = await Phonebook.countDocuments();
     res.send(`
-        <p>Phonebook has info for ${persons.length} people.</p>
+        <p>Phonebook has info for ${NumOfEntries} people.</p>
         <p>${requestTime}</p>
     `);
 })
@@ -79,40 +103,43 @@ app.delete('/api/persons/:id', (req, res)=>{
   persons = persons.filter(person=> person.id !== id)
   res.status(204).end()
 })
-const generateId = ()=>{
-  const newId = Math.floor(Math.random()*1000);
-  console.log(newId)
-  return newId
-}
 
+
+//test by using postman or post_person.rest
 app.post('/api/persons', (req, res)=>{
 const body = req.body;
 console.log(body)
-if(!body.name){
+if(body.name === undefined){
   return res.status(400).json({error: 'name is missing'})
 }
-if(!body.number){
-  return res.status(400).json({error: 'number is missing'})
-}
 
-const duplicatedName = persons.find(person=>person.name ===body.name)
-if(duplicatedName){
-    return res.status(404).json({error: 'name must be unique'})
-}
-else{
-
-const person = {
-  id: generateId(),
-  name: body.name,
-  number: body.number
-} 
-  persons.concat(person)
-  res.json(person)
-}
+const duplicatedName = Phonebook.find({}).then(entries=>{
+  entries.find(person=>person.name ===body.name)
 })
 
+if(duplicatedName){
+    return res.status(404).json({error: 'name must be unique'})
+  }
+else{
+    const person = new Phonebook({
+      name: body.name,
+      number: body.number
+    })
+    person.save().then(savedPerson =>{
+      console.log(`${savedPerson.name} has been saved successfully in database`)
+      res.json(savedPerson)
+    })
+    .catch(error=>{
+      console.log("could not save in database", error.message)
+    })
+    
+  }
+})
 
+app.use(unknownEndpoint);
 //start server
-const port = 3001;
-app.listen(port);
-console.log('server is running on ', port);
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, ()=>{
+  console.log(`Server running on port ${PORT}`)
+});
+
