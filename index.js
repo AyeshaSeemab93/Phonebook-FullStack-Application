@@ -106,34 +106,31 @@ app.delete('/api/persons/:id', (req, res)=>{
 
 
 //test by using postman or post_person.rest
-app.post('/api/persons', (req, res)=>{
+app.post('/api/persons',async (req, res)=>{
 const body = req.body;
 console.log(body)
-if(body.name === undefined){
-  return res.status(400).json({error: 'name is missing'})
+if(!body.name){
+  return res.status(400).json({error: 'Name is missing'})
 }
+//WILL DO LATER IN COURSE
+//  const duplicatedName =await Phonebook.findOne({name: body.name})
 
-const duplicatedName = Phonebook.find({}).then(entries=>{
-  entries.find(person=>person.name ===body.name)
-})
-
-if(duplicatedName){
-    return res.status(404).json({error: 'name must be unique'})
-  }
-else{
-    const person = new Phonebook({
-      name: body.name,
-      number: body.number
-    })
-    person.save().then(savedPerson =>{
-      console.log(`${savedPerson.name} has been saved successfully in database`)
-      res.json(savedPerson)
-    })
-    .catch(error=>{
-      console.log("could not save in database", error.message)
-    })
-    
-  }
+// if(duplicatedName){
+//     return res.status(404).json({error: 'Name must be unique'})
+//   }
+  const person = new Phonebook({
+    name: body.name,
+    number: body.number
+  })
+  await person.save()
+      .then(savedPerson =>{
+        console.log(`${savedPerson.name} has been saved successfully in database`)
+        res.json(savedPerson)
+      })
+      .catch(error=>{
+        console.log("could not save in database", error.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+      })
 })
 
 app.use(unknownEndpoint);
