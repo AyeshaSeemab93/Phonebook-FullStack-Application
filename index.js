@@ -1,7 +1,7 @@
 //putting data into links/in place of http
 const express = require('express');
 const app = express();
-const morgan = require('morgan')
+ const morgan = require('morgan')
 const cors = require('cors')
 
 const mongoose = require('mongoose')//communication with mongoDB database
