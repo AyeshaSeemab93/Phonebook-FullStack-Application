@@ -39,8 +39,6 @@ const errorHandler = (error, req, res, next)=>{
   else{
     next(error)
   }
-  
-
 }
 
 
@@ -73,8 +71,6 @@ let persons = [
 //   console.log("All numbers saved");
 // })
 
-
-
 app.get('/api/persons/', (req,res)=>{
   console.log('request to show all phonebook');
   Phonebook.find({})
@@ -84,24 +80,20 @@ app.get('/api/persons/', (req,res)=>{
   .catch(error=>{
     console.log("Could not fetch data from database")
     res.status(500).send({eror: 'internal server error'});
-
   })
 })
 
 app.get('/api/persons/:id', (req,res, next)=>{
-
-Phonebook.findById(req.params.id)
-  .then(person=>{
-    if(person){
-      console.log("person found in database")
-    res.json(person)
-    }else{
-      res.status(404).end()
-    }
-    
-  })
-  .catch(error=> next(error))
-
+  Phonebook.findById(req.params.id)
+    .then(person=>{
+      if(person){
+        console.log("person found in database")
+      res.json(person)
+      }else{
+        res.status(404).end()
+      } 
+    })
+    .catch(error=> next(error))
 })
 
 
@@ -122,33 +114,26 @@ app.delete('/api/persons/:id', (req, res)=>{
           .catch(error => next(error))
 })
 
-
 //test by using postman or post_person.rest
 app.post('/api/persons',async (req, res)=>{
-const body = req.body;
-console.log(body)
-if(!body.name){
-  return res.status(400).json({error: 'Name is missing'})
-}
-//WILL DO LATER IN COURSE
-//  const duplicatedName =await Phonebook.findOne({name: body.name})
-
-// if(duplicatedName){
-//     return res.status(404).json({error: 'Name must be unique'})
-//   }
+  const body = req.body;
+  console.log(body)
+  if(!body.name){
+    return res.status(400).json({error: 'Name is missing'})
+  }
   const person = new Phonebook({
-    name: body.name,
-    number: body.number
-  })
+      name: body.name,
+      number: body.number
+    })
   await person.save()
-      .then(savedPerson =>{
-        console.log(`${savedPerson.name} has been saved successfully in database`)
-        res.json(savedPerson)
-      })
-      .catch(error=>{
-        console.log("could not save in database", error.message);
-        res.status(500).json({ error: 'Internal Server Error' });
-      })
+        .then(savedPerson =>{
+          console.log(`${savedPerson.name} has been saved successfully in database`)
+          res.json(savedPerson)
+        })
+        .catch(error=>{
+          console.log("could not save in database", error.message);
+          res.status(500).json({ error: 'Internal Server Error' });
+        })
 })
 
 app.put('/api/persons/:id', (req, res, next)=>{
@@ -158,13 +143,14 @@ app.put('/api/persons/:id', (req, res, next)=>{
     name: body.name,
     number: body.number
   }
-  Phonebook.findByIdAndUpdate(req.params.id,UpdatedEntry, {new: true} )
-           .then(dbUpdatedEntry=> {
-              console.log('updated in database')
-              res.json(dbUpdatedEntry)})
-           .catch(error=> {
-              next(error)}
-           )
+  Phonebook
+      .findByIdAndUpdate(req.params.id,UpdatedEntry, {new: true} )
+      .then(dbUpdatedEntry=> {
+        console.log('updated in database')
+        res.json(dbUpdatedEntry)})
+      .catch(error=> {
+        next(error)}
+        )
 })
 
 
