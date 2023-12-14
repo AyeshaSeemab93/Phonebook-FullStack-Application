@@ -18,6 +18,7 @@ const unknownEndpoint = (req, res)=>{
   res.status(400).send({error: 'unknown endpoint'})
 }
 
+
 app.use(morgan((tokens, req, res)=> {
   //conver the body boject to string first
   const requestBody = JSON.stringify(req.body)
@@ -76,17 +77,24 @@ app.get('/api/persons/', (req,res)=>{
 })
 
 app.get('/api/persons/:id', (req,res)=>{
-const id = Number(req.params.id);
-Phonebook.findById(id)
+
+Phonebook.findById(req.params.id)
   .then(person=>{
-    console.log('person found', person)
+    if(person){
+      console.log("person found in database")
     res.json(person)
+    }else{
+      res.status(404).end()
+    }
+    
   })
   .catch(error=>{
-  console.log("Could not find the person",error.message)
+  console.log("Could not find the person. ",error.message)
+  res.status(400).send({error: 'malformatted endpoint'})
   })
 
 })
+
 
 app.get('/info',async (req, res)=>{
   console.log('In Info Page')
@@ -99,9 +107,13 @@ app.get('/info',async (req, res)=>{
 })
 
 app.delete('/api/persons/:id', (req, res)=>{
-  const id = Number(req.params.id)
-  persons = persons.filter(person=> person.id !== id)
-  res.status(204).end()
+  const id = req.params.id;
+  Phonebook.findByIdAndDelete(id)
+          .then(deletedEntry=> res.status(204).end())
+          .catch(error => {
+            console.error(error.message)
+            res.status(400).send({error: 'malformatted id'})
+          })
 })
 
 

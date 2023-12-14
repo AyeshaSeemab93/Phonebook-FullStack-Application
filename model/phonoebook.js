@@ -18,7 +18,15 @@ mongoose.connect(url)
     name: String,
     number: String
   })
- 
+
   const Phonebook = mongoose.model('phonebook', phonebookSchema);
 
+
+  phonebookSchema.set('toJSON',{
+    transform: (document, returnedObject) =>{
+      returnedObject.id = document._id.toString();
+      delete returnedObject._id
+      delete returnedObject.__v
+    }
+  })
   module.exports = Phonebook
