@@ -14,11 +14,6 @@ app.use(express.static('dist'));
 const Phonebook =require('./model/phonoebook');
 
 //middlewares
-const unknownEndpoint = (req, res)=>{
-  res.status(400).send({error: 'unknown endpoint'})
-}
-
-
 app.use(morgan((tokens, req, res)=> {
   //conver the body boject to string first
   const requestBody = JSON.stringify(req.body)
@@ -31,6 +26,23 @@ app.use(morgan((tokens, req, res)=> {
     requestBody,
   ].join(' ')
 }));
+
+const unknownEndpoint = (req, res)=>{
+  res.status(404).send({error: 'unknown endpoint'})
+}
+
+const errorHandler = (error, req, res, next)=>{
+  console.log(error.message)
+  if(error.name === 'CastError'){
+    return res.status(400).send({error: 'malformatted endpoint'})
+  }
+  else{
+    next(error)
+  }
+  
+
+}
+
 
 let persons = [
   // { 
@@ -76,7 +88,7 @@ app.get('/api/persons/', (req,res)=>{
   })
 })
 
-app.get('/api/persons/:id', (req,res)=>{
+app.get('/api/persons/:id', (req,res, next)=>{
 
 Phonebook.findById(req.params.id)
   .then(person=>{
@@ -88,15 +100,12 @@ Phonebook.findById(req.params.id)
     }
     
   })
-  .catch(error=>{
-  console.log("Could not find the person. ",error.message)
-  res.status(400).send({error: 'malformatted endpoint'})
-  })
+  .catch(error=> next(error))
 
 })
 
 
-app.get('/info',async (req, res)=>{
+app.get('/info',async (req, res, next)=>{
   console.log('In Info Page')
   const requestTime = new Date().toString();
   const NumOfEntries = await Phonebook.countDocuments();
@@ -110,10 +119,7 @@ app.delete('/api/persons/:id', (req, res)=>{
   const id = req.params.id;
   Phonebook.findByIdAndDelete(id)
           .then(deletedEntry=> res.status(204).end())
-          .catch(error => {
-            console.error(error.message)
-            res.status(400).send({error: 'malformatted id'})
-          })
+          .catch(error => next(error))
 })
 
 
@@ -146,6 +152,7 @@ if(!body.name){
 })
 
 app.use(unknownEndpoint);
+app.use(errorHandler);
 //start server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, ()=>{
