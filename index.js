@@ -28,7 +28,7 @@ app.use(morgan((tokens, req, res)=> {
 }));
 
 const unknownEndpoint = (req, res)=>{
-  res.status(404).send({error: 'unknown endpoint'})
+  res.status(400).send({error: 'unknown endpoint'})
 }
 
 const errorHandler = (error, req, res, next)=>{
@@ -150,6 +150,23 @@ if(!body.name){
         res.status(500).json({ error: 'Internal Server Error' });
       })
 })
+
+app.put('/api/persons/:id', (req, res, next)=>{
+  console.log('req to udate the phone number in database');
+  const body = req.body;
+  const UpdatedEntry = {
+    name: body.name,
+    number: body.number
+  }
+  Phonebook.findByIdAndUpdate(req.params.id,UpdatedEntry, {new: true} )
+           .then(dbUpdatedEntry=> {
+              console.log('updated in database')
+              res.json(dbUpdatedEntry)})
+           .catch(error=> {
+              next(error)}
+           )
+})
+
 
 app.use(unknownEndpoint);
 app.use(errorHandler);
