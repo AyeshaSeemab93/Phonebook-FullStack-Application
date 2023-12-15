@@ -31,15 +31,18 @@ const unknownEndpoint = (req, res)=>{
   res.status(400).send({error: 'unknown endpoint'})
 }
 
-const errorHandler = (error, req, res, next)=>{
-  console.log(error.message)
-  if(error.name === 'CastError'){
-    return res.status(400).send({error: 'malformatted endpoint'})
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  } 
+  else if(error.name === 'ValidationError'){
+    return response.status(400).json({error: error.message})
   }
-  else{
-    next(error)
-  }
+  next(error)
 }
+
 
 
 let persons = [
@@ -49,27 +52,6 @@ let persons = [
   //   "number": "040-123456"
   // }
 ]
-
-// function AddNumbers(name, number){
-//   const entry = new Phonebook({
-//     name,
-//     number
-//   })
-//   entry.save()
-//     .then(result=>{
-//       console.log(`${result.name} with number ${result.number} has been saved in database`)
-//       res.json(result)
-//     })
-//     .catch(error=>{
-//       console.log("Could not save phoneNumber");
-//       console.log(error.message);
-//     } )
-// }
-// const promiseArray = persons.map(person => AddNumbers(person.name, person.number))
-// Promise.all(promiseArray)
-// .then(()=>{
-//   console.log("All numbers saved");
-// })
 
 app.get('/api/persons/', (req,res)=>{
   console.log('request to show all phonebook');
@@ -115,24 +97,27 @@ app.delete('/api/persons/:id', (req, res)=>{
 })
 
 //test by using postman or post_person.rest
-app.post('/api/persons',async (req, res)=>{
+app.post('/api/persons',(req, res, next)=>{
   const body = req.body;
   console.log(body)
-  if(!body.name){
-    return res.status(400).json({error: 'Name is missing'})
-  }
+  //remove bec we have added these directly in schema
+  // if(!body.name){
+  //   return res.status(400).json({error: 'Name is missing'})
+  // }
   const person = new Phonebook({
       name: body.name,
       number: body.number
     })
-  await person.save()
+    console.log(person);
+  person.save()
         .then(savedPerson =>{
           console.log(`${savedPerson.name} has been saved successfully in database`)
           res.json(savedPerson)
         })
         .catch(error=>{
-          console.log("could not save in database", error.message);
-          res.status(500).json({ error: 'Internal Server Error' });
+          next(error)
+          // console.log("could not save in database", error.message);
+          // res.status(500).json({ error: 'Internal Server Error' });
         })
 })
 
@@ -144,13 +129,12 @@ app.put('/api/persons/:id', (req, res, next)=>{
     number: body.number
   }
   Phonebook
-      .findByIdAndUpdate(req.params.id,UpdatedEntry, {new: true} )
+      .findByIdAndUpdate(req.params.id,UpdatedEntry, 
+        {new: true, runValidators: true, context: 'query'} )
       .then(dbUpdatedEntry=> {
         console.log('updated in database')
         res.json(dbUpdatedEntry)})
-      .catch(error=> {
-        next(error)}
-        )
+      .catch(error=>next(error))
 })
 
 
