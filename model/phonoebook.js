@@ -13,15 +13,27 @@ mongoose.connect(url)
   .catch(error=>{
     console.log("unable to connect to databse.", error.message)
   })
-
+//adding custom validators
   const phonebookSchema = new mongoose.Schema({
     name:{
       type: String,
       minLength: 3,
       required: true
     },
-    number: String
+    number:{
+      type: String,
+      required: ['Phone number required!'],
+      validate: {
+        validator: function(phoneNum){
+          //logic of number 09-1234556 and 040-22334455
+          const phoneNumberRegex = /^(?:\d{2,3}-\d{7,}|\d{2,3}\d{7,})$/;
+          return phoneNumberRegex.test(phoneNum); //check the number matches the logic
+        },
+        message: (props)=> `${props.value} is not a valid number. Min length: 8, Format: 09-1234556 OR 040-22334455`
+      }
+    }
   })
+
 
   const Phonebook = mongoose.model('phonebook', phonebookSchema);
 
